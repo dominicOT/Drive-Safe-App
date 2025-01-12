@@ -7,6 +7,13 @@ function App() {
   const [nearestCenter, setNearestCenter] = useState(null);
   const [helpRequested, setHelpRequested] = useState(false);
 
+  const [selectedEmergencyType, setSelectedEmergencyType] = useState('');
+  const [additionalDetails, setAdditionalDetails] = useState('');
+  
+  const [imagePreview, setImagePreview] = useState(null);
+  const [image, setImage] = useState(null);
+  
+
   const calculateDistance = (lat1, lng1, lat2, lng2) => {
     const toRad = (value) => (value * Math.PI) / 180;
     const R = 6371; // Earth's radius in km
@@ -63,7 +70,7 @@ function App() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        to: '+1234567890', // Replace with the actual emergency contact number
+        to: '+23234872268',
         message: message,
       }),
     })
@@ -76,6 +83,29 @@ function App() {
       .catch((error) => console.error('Error sending help request:', error));
   };
 
+  //constant to handle image added
+  const handleAddPhoto = () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.onchange = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        setImage(file);
+
+        //preview selected image
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    fileInput.click();
+  };
+
+
+  //###########################################################################
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100">
       {/* Navigation Bar */}
@@ -109,7 +139,12 @@ function App() {
                 {['Fire', 'Police', 'Accident', 'Break Down'].map((type) => (
                   <button
                     key={type}
-                    className="p-4 border-2 border-red-100 rounded-xl hover:bg-red-50 hover:border-red-500 transition-all"
+                    className={`p-4 border-2 rounded-xl transition-all ${
+                      selectedEmergencyType === type
+                        ? 'bg-red-500 text-white border-red-500'
+                        : 'border-red-100 hover:bg-red-50 hover:border-red-500'
+                    }`}
+                    onClick={() => setSelectedEmergencyType(type)}
                   >
                     <div className="text-center">
                       <span className="block text-lg font-medium text-gray-900">{type}</span>
@@ -132,15 +167,42 @@ function App() {
                 className="w-full p-3 border rounded-lg"
                 placeholder="Describe your emergency situation..."
                 rows="4"
+                value={additionalDetails}
+                onChange={(e) => setAdditionalDetails(e.target.value)}
               />
               <div className="mt-4 flex space-x-4">
-                <button className="flex items-center space-x-2 text-blue-600">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <button
+                  className="flex items-center space-x-2 text-blue-600"
+                  onClick={handleAddPhoto}
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                    />
                   </svg>
                   <span>Add Photo</span>
                 </button>
               </div>
+
+              {/* Image Preview */}
+              {imagePreview && (
+                <div className="mt-4">
+                  <h3 className="text-lg font-semibold mb-2">Selected Image:</h3>
+                  <img
+                    src={imagePreview}
+                    alt="Selected"
+                    className="max-w-full h-auto rounded-lg shadow-md"
+                  />
+                </div>
+              )}
             </div>
           </div>
 
